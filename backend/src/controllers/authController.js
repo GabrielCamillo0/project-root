@@ -30,21 +30,28 @@ exports.login = async (req, res, next) => {
   const { username, password } = req.body;
   try {
     const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-   
-
     if (result.rows.length === 0) {
       return next(new ErrorResponse('Invalid credentials', 400));
     }
     const user = result.rows[0];
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-       // Antes de comparar a senha:
-  console.log('Usuário encontrado:', user);
+      console.log('Usuário encontrado:', user);
       return next(new ErrorResponse('Invalid credentials', 400));
     }
     const token = jwtHelper.generateToken({ id: user.id, username: user.username, role: user.role });
     res.json({ token });
   } catch (error) {
     next(error);
+  }
+};
+
+// NOVO: Retorna os usuários criados (baseado nos usuários registrados via auth)
+exports.getUsers = async (req, res, next) => {
+  try {
+    const result = await db.query('SELECT id, username, role FROM users');
+    res.json(result.rows);
+  } catch (error) {
+    next(new ErrorResponse('Error fetching users', 500));
   }
 };

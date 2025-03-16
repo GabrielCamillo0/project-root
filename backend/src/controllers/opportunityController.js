@@ -36,15 +36,22 @@ exports.updateOpportunity = async (req, res, next) => {
   const { id } = req.params;
   const { stage } = req.body;
   try {
-    const result = await db.query(
-      'UPDATE opportunities SET stage=$1 WHERE id=$2 RETURNING *',
-      [stage, id]
-    );
+    let query, params;
+    // Se o usuário for gestor, atualize sem restrição; caso contrário, verifique se o registro pertence ao usuário
+    if (req.user.role === 'gestor') {
+      query = 'UPDATE opportunities SET stage=$1 WHERE id=$2 RETURNING *';
+      params = [stage.toLowerCase(), id];
+    } else {
+      query = 'UPDATE opportunities SET stage=$1 WHERE id=$2 AND user_id=$3 RETURNING *';
+      params = [stage.toLowerCase(), id, req.user.id];
+    }
+    const result = await db.query(query, params);
     if (result.rows.length === 0) {
-      return next(new ErrorResponse('Opportunity not found', 404));
+      return next(new ErrorResponse('Opportunity not found or not authorized', 404));
     }
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Error updating opportunity:', error);
     next(new ErrorResponse('Error updating opportunity', 500));
   }
 };

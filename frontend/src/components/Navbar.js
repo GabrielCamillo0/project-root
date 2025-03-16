@@ -1,62 +1,79 @@
 import React from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { useNavigate,Link } from "react-router-dom";
 import useAuth from '../hooks/useAuth';
+import '../styles/Navbar.css';
 
-const Navbar = () => {
+const Sidebar = () => {
   const { auth, logout } = useAuth();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    history.push('/login');
+    navigate('/login');
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <Link className="navbar-brand" to="/">CRM</Link>
-      <button
-        className="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarSupportedContent"
-      >
-        <span className="navbar-toggler-icon" />
-      </button>
-      <div className="collapse navbar-collapse" id="navbarSupportedContent">
-        {auth.token && (
-          <>
-            <ul className="navbar-nav mr-auto">
-              <li className="nav-item">
-                <Link className="nav-link" to="/dashboard">Dashboard</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/contacts">Contacts</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/opportunities">Opportunities</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/accounts">Accounts</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/tasks">Tasks</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/communications">Communications</Link>
-              </li>
-            </ul>
-            <ul className="navbar-nav ml-auto">
-              <li className="nav-item">
-                <button className="btn btn-outline-danger" onClick={handleLogout}>
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </>
-        )}
+    <div className="sidebar bg-light">
+      {/* Logo at top */}
+      <div className="sidebar-logo">
+        <Link to="/">
+          <img src="/logo.png" alt="Logo" className="img-fluid p-3" />
+        </Link>
       </div>
-    </nav>
+
+      {/* Navigation Links */}
+      {auth.token && (
+        <div className="sidebar-menu">
+          <ul className="nav flex-column">
+                            
+            <li className="nav-item">
+              <Link className="nav-link" to="/dashboard">
+                <i className="fa fa-tachometer-alt mr-2"></i> Dashboard
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/contacts">
+                <i className="fa fa-address-book mr-2"></i> Contacts
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/opportunities">
+                <i className="fa fa-chart-line mr-2"></i> Opportunities
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/accounts">
+                <i className="fa fa-briefcase mr-2"></i> Accounts
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/tasks">
+                <i className="fa fa-tasks mr-2"></i> Tasks
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/communications">
+                <i className="fa fa-comment mr-2"></i> Communications
+              </Link>
+            </li>
+            
+            
+            <li className="nav-item user-profile">
+              <div className="nav-link">
+                <span></span>
+                <i className="fa fa-chevron-right float-right"></i>
+              </div>
+            </li>
+            <li className="nav-item">
+              <button className="btn btn-outline-danger w-100 mt-2" onClick={handleLogout}>
+                <i className="fa fa-sign-out-alt mr-2"></i> Logout
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default Navbar;
+export default Sidebar;

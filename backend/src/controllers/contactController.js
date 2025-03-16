@@ -15,14 +15,27 @@ exports.createContact = async (req, res, next) => {
     next(new ErrorResponse('Error creating contact', 500));
   }
 };
-// Lista contatos do usuário ou, se gestor, de todos os contatos
+
+// Lista contatos: para gestor retorna todos com o nome do criador; para vendedores, filtra por seu user_id
 exports.getContacts = async (req, res, next) => {
   try {
-    let query = 'SELECT * FROM contacts WHERE user_id = $1';
-    let params = [req.user.id];
+    let query;
+    let params;
     if (req.user.role === 'gestor') {
-      query = 'SELECT * FROM contacts';
+      query = `
+        SELECT contacts.*, users.username AS creator_name 
+        FROM contacts 
+        LEFT JOIN users ON contacts.user_id = users.id
+      `;
       params = [];
+    } else {
+      query = `
+        SELECT contacts.*, users.username AS creator_name 
+        FROM contacts 
+        LEFT JOIN users ON contacts.user_id = users.id
+        WHERE contacts.user_id = $1
+      `;
+      params = [req.user.id];
     }
     const result = await db.query(query, params);
     res.json(result.rows);
@@ -31,7 +44,7 @@ exports.getContacts = async (req, res, next) => {
   }
 };
 
-// Atualiza um contato – permite que gestores atualizem qualquer contato
+// Atualiza um contato – (mantém a lógica atual)
 exports.updateContact = async (req, res, next) => {
   const { id } = req.params;
   const { name, email, phone, status, lead_score } = req.body;
@@ -49,12 +62,11 @@ exports.updateContact = async (req, res, next) => {
   }
 };
 
-// Atualiza a pontuação de lead de um contato (restrição de usuário permanece)
+// Atualiza a pontuação de lead de um contato
 exports.updateLeadScore = async (req, res, next) => {
   const { id } = req.params;
   const { lead_score } = req.body;
   try {
-    // Para atualizar o lead_score, mesmo o gestor pode optar por não ter restrição de user_id, mas aqui mantemos para consistência.
     let query;
     let params;
     if (req.user.role === 'gestor') {
@@ -74,7 +86,7 @@ exports.updateLeadScore = async (req, res, next) => {
   }
 };
 
-// Deleta um contato – permite que gestores deletem qualquer contato
+// Deleta um contato
 exports.deleteContact = async (req, res, next) => {
   const { id } = req.params;
   try {

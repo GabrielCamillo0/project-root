@@ -8,7 +8,6 @@ import '../styles/custom.css';
 const ContactsPage = () => {
   const [contacts, setContacts] = useState([]);
   const [error, setError] = useState('');
-  // Adicionamos a propriedade lead_score ao estado do formulário
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -47,7 +46,6 @@ const ContactsPage = () => {
         const res = await api.post('/contacts', form);
         setContacts([...contacts, res.data]);
       }
-      // Reset do formulário, incluindo lead_score
       setForm({ name: '', email: '', phone: '', status: 'lead', lead_score: 0 });
     } catch (err) {
       console.error('Error saving contact:', err);
@@ -151,20 +149,43 @@ const ContactsPage = () => {
             Contacts List
           </div>
           <div className="card-body page-card-body">
-            <ul className="list-group">
-              {contacts.map(contact => (
-                <li key={contact.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <h5>{contact.name}</h5>
-                    <p>{contact.email} | {contact.phone} | {contact.status} | Score: {contact.lead_score || 0}</p>
-                  </div>
-                  <div>
-                    <button className="btn btn-sm btn-warning mr-2" onClick={() => handleEdit(contact)}>Edit</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(contact.id)}>Delete</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <table className="table table-sm table-striped">
+              <thead className="thead-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Score</th>
+                  <th>Created By</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contacts.length > 0 ? (
+                  contacts.map(contact => (
+                    <tr key={contact.id}>
+                      <td>{contact.id}</td>
+                      <td>{contact.name}</td>
+                      <td>{contact.email}</td>
+                      <td>{contact.phone}</td>
+                      <td>{contact.status}</td>
+                      <td>{contact.lead_score || 0}</td>
+                      <td>{contact.creator_name || contact.user_id}</td>
+                      <td>
+                        <button className="btn btn-sm btn-warning mr-2" onClick={() => handleEdit(contact)}>Edit</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(contact.id)}>Delete</button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="text-center">No records found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

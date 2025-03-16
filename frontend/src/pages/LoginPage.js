@@ -1,6 +1,6 @@
 // frontend/src/pages/LoginPage.js
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import useAuth from '../hooks/useAuth';
 import api from '../services/api';
 import FormInput from '../components/Forminput';
@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const { login } = useAuth();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ const LoginPage = () => {
     try {
       const res = await api.post('/auth/login', { username, password });
       login(res.data.token, { username });
-      history.push('/dashboard');
+      navigate('/dashboard');
     } catch (error) {
       setErrorMsg(error.response?.data?.error || 'Login failed');
     }
