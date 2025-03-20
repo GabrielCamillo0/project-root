@@ -1,98 +1,133 @@
-/* Sidebar Styles */
+/* Sidebar base */
 .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background-color: #fdfdfd;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+/* Estados expandido e recolhido */
+.sidebar.expanded {
+  width: 240px;
+  background-color: #6200ea;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+/* Botão de toggle */
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #6200ea;
+  color: #fff;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+.sidebar-toggle:hover {
+  background-color: #3700b3;
+}
+
+/* Conteúdo da sidebar */
+.sidebar-content {
+  flex: 1;
+  overflow: hidden; /* Impede que o conteúdo ultrapasse a largura */
+  padding-top: 50px;
+}
+
+/* Logo */
+.sidebar-logo {
+  text-align: center;
+  padding: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-logo img {
+  max-width: 80%;
+  height: auto;
+  transition: opacity 0.3s ease;
+}
+
+/* Esconde o texto e o logo quando recolhido */
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .sidebar-logo img {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Menu de navegação vertical */
+.nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-item {
+  margin: 5px 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  color: #333;
+  text-decoration: none;
+  padding: 10px 20px;
+  transition: background 0.3s;
+}
+
+.nav-link:hover {
+  background-color: #f0f0f0;
+}
+
+.nav-link i {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-text {
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+/* Rodapé da sidebar (logout) */
+.sidebar-footer {
+  padding: 15px;
+  border-top: 1px solid #6d0d65;
+}
+
+.logout-button {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #d9534f;
+  cursor: pointer;
+  text-align: left;
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+/* Responsividade: para telas menores */
+@media (max-width: 768px) {
+  .sidebar.expanded {
     width: 200px;
-    height: 100vh;
-    overflow-y: auto;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
   }
-  
-  .sidebar-logo {
-    padding: 15px;
-    border-bottom: 1px solid #e9ecef;
+  .sidebar.collapsed {
+    width: 60px;
   }
-  
-  .sidebar-menu {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .sidebar-menu .nav {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .sidebar-menu .nav-link {
-    color: #666;
-    padding: 12px 20px;
-    border-left: 3px solid transparent;
-    transition: all 0.3s;
-  }
-  
-  .sidebar-menu .nav-link:hover, 
-  .sidebar-menu .nav-link.active {
-    background-color: #f8f9fa;
-    color: #3366cc;
-    border-left-color: #3366cc;
-  }
-  
-  .sidebar-menu .nav-link i {
-    width: 20px;
-    text-align: center;
-    margin-right: 10px;
-  }
-  
-  .sidebar-menu .badge {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  .sidebar-menu .user-profile {
-    margin-top: auto;
-    border-top: 1px solid #e9ecef;
-  }
-  
-  /* Adjust main content to make room for sidebar */
-  .main-content {
-    margin-left: 220px;
-    padding: 20px;
-    width: calc(100% - 220px);
-  }
-  
-  /* For smaller screens */
-  @media (max-width: 768px) {
-    .sidebar {
-      width: 60px;
-      overflow: visible;
-    }
-    
-    .sidebar-menu .nav-link span {
-      display: none;
-    }
-    
-    .sidebar-logo img {
-      max-width: 30px;
-    }
-    
-    .main-content {
-      margin-left: 60px;
-      width: calc(100% - 60px);
-    }
-    
-    .sidebar:hover {
-      width: 220px;
-    }
-    
-    .sidebar:hover .sidebar-menu .nav-link span {
-      display: inline;
-    }
-  }
+}

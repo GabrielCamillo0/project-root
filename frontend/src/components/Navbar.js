@@ -1,11 +1,32 @@
-import React from 'react';
-import { useNavigate,Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from "react-router-dom";
 import useAuth from '../hooks/useAuth';
 import '../styles/Navbar.css';
 
-const Sidebar = () => {
+const Navbar = () => {
   const { auth, logout } = useAuth();
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(true);
+  const [manual, setManual] = useState(false);
+
+  const toggleSidebar = () => {
+    const newCollapsed = !collapsed;
+    setCollapsed(newCollapsed);
+    // Se a sidebar for expandida manualmente (collapsed === false) desativa os efeitos de hover.
+    setManual(!newCollapsed);
+  };
+
+  // Escuta o evento global disparado pelo TopBar
+  useEffect(() => {
+    const handleToggleEvent = () => {
+      toggleSidebar();
+    };
+
+    window.addEventListener('toggleSidebar', handleToggleEvent);
+    return () => {
+      window.removeEventListener('toggleSidebar', handleToggleEvent);
+    };
+  }, [collapsed]); // Note: usamos collapsed para refletir a alteração
 
   const handleLogout = () => {
     logout();
@@ -13,67 +34,71 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="sidebar bg-light">
-      {/* Logo at top */}
-      <div className="sidebar-logo">
-        <Link to="/">
-          <img src="/logo.png" alt="Logo" className="img-fluid p-3" />
-        </Link>
-      </div>
-
-      {/* Navigation Links */}
-      {auth.token && (
-        <div className="sidebar-menu">
-          <ul className="nav flex-column">
-                            
+    <div 
+      className={`sidebar ${collapsed ? 'collapsed' : 'expanded'}`}
+      {...(!manual && {
+        onMouseEnter: () => setCollapsed(false),
+        onMouseLeave: () => setCollapsed(true)
+      })}
+    >
+      <div className="sidebar-content">
+        <div className="sidebar-logo">
+          <Link to="/">
+            <img src="/logo.png" alt="Logo" />
+          </Link>
+        </div>
+        {auth.token && (
+          <ul className="nav">
             <li className="nav-item">
               <Link className="nav-link" to="/dashboard">
-                <i className="fa fa-tachometer-alt mr-2"></i> Dashboard
+                <i className="fa fa-tachometer-alt"></i>
+                <span className="nav-text">Dashboard</span>
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/contacts">
-                <i className="fa fa-address-book mr-2"></i> Contacts
+                <i className="fa fa-address-book"></i>
+                <span className="nav-text">Contacts</span>
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/opportunities">
-                <i className="fa fa-chart-line mr-2"></i> Opportunities
+                <i className="fa fa-chart-line"></i>
+                <span className="nav-text">Opportunities</span>
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/accounts">
-                <i className="fa fa-briefcase mr-2"></i> Accounts
+                <i className="fa fa-briefcase"></i>
+                <span className="nav-text">Accounts</span>
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/tasks">
-                <i className="fa fa-tasks mr-2"></i> Tasks
+                <i className="fa fa-tasks"></i>
+                <span className="nav-text">Tasks</span>
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/communications">
-                <i className="fa fa-comment mr-2"></i> Communications
+                <i className="fa fa-comment"></i>
+                <span className="nav-text">Communications</span>
               </Link>
             </li>
-            
-            
-            <li className="nav-item user-profile">
-              <div className="nav-link">
-                <span></span>
-                <i className="fa fa-chevron-right float-right"></i>
-              </div>
-            </li>
-            <li className="nav-item">
-              <button className="btn btn-outline-danger w-100 mt-2" onClick={handleLogout}>
-                <i className="fa fa-sign-out-alt mr-2"></i> Logout
-              </button>
-            </li>
           </ul>
+        )}
+      </div>
+
+      {auth.token && (
+        <div className="sidebar-footer">
+          <button className="logout-button" onClick={handleLogout}>
+            <i className="fa fa-sign-out-alt"></i>
+            <span className="nav-text">Logout</span>
+          </button>
         </div>
       )}
     </div>
   );
 };
 
-export default Sidebar;
+export default Navbar;

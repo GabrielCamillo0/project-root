@@ -7,7 +7,7 @@ import '../styles/Opportunities.css';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Modal, Button } from 'react-bootstrap';
 
-// Define os estágios do pipeline (ajuste conforme seu modelo)
+// Define os estágios do pipeline (ajuste conforme o seu modelo)
 const pipelineStages = ['new', 'negotiation', 'closed'];
 
 const OpportunitiesPage = () => {
@@ -20,11 +20,11 @@ const OpportunitiesPage = () => {
     contact_id: ''
   });
   const [editingId, setEditingId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // Modal para criação/edição
   const [isClient, setIsClient] = useState(false); // Garante que DnD só seja renderizado no cliente
 
   useEffect(() => {
-    setIsClient(true); // Após a montagem, estamos no navegador
+    setIsClient(true);
     fetchOpportunities();
   }, []);
 
@@ -82,6 +82,17 @@ const OpportunitiesPage = () => {
     }
   };
 
+  // Nova função para finalizar a oportunidade
+  const handleFinalize = async (id) => {
+    try {
+      await api.put(`/opportunities/${id}/finalize`);
+      setOpportunities(opportunities.filter(opp => opp.id !== id));
+    } catch (err) {
+      console.error('Error finalizing opportunity:', err);
+      setError('Error finalizing opportunity');
+    }
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingId(null);
@@ -113,50 +124,41 @@ const OpportunitiesPage = () => {
 
   // Função chamada ao finalizar o drag and drop
   const onDragEnd = async (result) => {
-    if (!result.destination) return;
+    if (!result.destination) return; // Se não houver destino, sai
     const { source, destination } = result;
-    
-    // Se o item for solto na mesma coluna na mesma posição, não faz nada
-    if (source.droppableId === destination.droppableId && source.index === destination.index) {
-      return;
-    }
-    
-    // Se o item for movido dentro da mesma coluna, reordena o array
+    // Se não houver mudança de posição, não faz nada
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    // Se for movido dentro da mesma coluna, apenas reordena
     if (source.droppableId === destination.droppableId) {
       const items = Array.from(groupedOpportunities[source.droppableId]);
       const [movedItem] = items.splice(source.index, 1);
       items.splice(destination.index, 0, movedItem);
-      // Atualiza somente a coluna afetada
       const newGrouped = { ...groupedOpportunities, [source.droppableId]: items };
       const newOpportunities = [];
       pipelineStages.forEach(stage => {
         newOpportunities.push(...newGrouped[stage]);
       });
       setOpportunities(newOpportunities);
-      // (Opcional) Aqui você pode atualizar a ordem no backend se houver suporte
       return;
     }
-    
-    // Se o item for movido para uma coluna diferente
+
+    // Se for movido para uma coluna diferente
     const sourceList = Array.from(groupedOpportunities[source.droppableId]);
     const [movedItem] = sourceList.splice(source.index, 1);
     movedItem.stage = destination.droppableId.toLowerCase();
     const destList = Array.from(groupedOpportunities[destination.droppableId]);
     destList.splice(destination.index, 0, movedItem);
-    
     const newGrouped = {
       ...groupedOpportunities,
       [source.droppableId]: sourceList,
       [destination.droppableId]: destList,
     };
-    
     const newOpportunities = [];
     pipelineStages.forEach(stage => {
       newOpportunities.push(...newGrouped[stage]);
     });
-    
     setOpportunities(newOpportunities);
-    
     try {
       await api.put(`/opportunities/${movedItem.id}`, { stage: movedItem.stage });
     } catch (err) {
@@ -184,7 +186,7 @@ const OpportunitiesPage = () => {
         </div>
         {error && <div className="alert alert-danger">{error}</div>}
 
-        {/* Modal para formulário de criação/edição */}
+        {/* Modal para criação/edição */}
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header closeButton>
             <Modal.Title>{editingId ? 'Edit Opportunity' : 'Create Opportunity'}</Modal.Title>
@@ -230,7 +232,7 @@ const OpportunitiesPage = () => {
           </Modal.Body>
         </Modal>
 
-        {/* Pipeline de Oportunidades com Drag and Drop exibido horizontalmente */}
+        {/* Pipeline de Oportunidades com Drag and Drop */}
         {isClient && (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="row">
@@ -262,6 +264,11 @@ const OpportunitiesPage = () => {
                                   <div className="mt-2">
                                     <button className="btn btn-sm btn-warning mr-2" onClick={() => handleEdit(opp)}>Edit</button>
                                     <button className="btn btn-sm btn-danger" onClick={() => handleDelete(opp.id)}>Delete</button>
+                                    {opp.stage.toLowerCase() === 'closed' && (
+                                      <button className="btn btn-sm btn-success ml-2" onClick={() => handleFinalize(opp.id)}>
+                                        Finalize
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               )}

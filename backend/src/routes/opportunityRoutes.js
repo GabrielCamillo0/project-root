@@ -40,4 +40,6 @@ router.put(
 // Deletar oportunidade (apenas para gestores)
 router.delete('/:id', isGestor, opportunityController.deleteOpportunity);
 
+router.put('/:id/finalize', opportunityController.finalizeOpportunity);
+
 module.exports = router;

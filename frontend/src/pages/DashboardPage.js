@@ -12,35 +12,37 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import '../styles/Dashboardpage.css'; // Certifique-se de criar e ajustar esse arquivo
-import { FaUser, FaMoneyBillWave, FaTasks, FaComments, FaEllipsisV } from 'react-icons/fa';
+import '../styles/Dashboardpage.css';
+import { FaUser, FaMoneyBillWave, FaTasks, FaComments } from 'react-icons/fa';
 import useAuth from '../hooks/useAuth';
+import SalesSummaryCards from '../components/SalesSummaryCards'; // Importa o componente SalesSummaryCards
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const DashboardPage = () => {
-  const { user } = useAuth(); // Obtém o usuário logado
+  const { user } = useAuth();
   const [dashboard, setDashboard] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [communications, setCommunications] = useState([]);
-  const [users, setUsers] = useState([]); // Estado para armazenar os usuários
+  const [users, setUsers] = useState([]);
+  const [salesSummary, setSalesSummary] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('month');
 
+  // Carrega dados principais do dashboard
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Carrega dados em paralelo
         const [dashboardRes, contactsRes, opportunitiesRes, tasksRes, communicationsRes] = await Promise.all([
           api.get('/reports/dashboard'),
           api.get('/contacts'),
           api.get('/opportunities'),
           api.get('/tasks'),
-          api.get('/communications')
+          api.get('/communications'),
         ]);
         setDashboard(dashboardRes.data);
         setContacts(contactsRes.data);
@@ -59,11 +61,11 @@ const DashboardPage = () => {
     loadData();
   }, [timeframe]);
 
-  // Carrega os usuários (agora para todos os usuários, sem restrição)
+  // Carrega usuários (para exibição na seção de usuários)
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const res = await api.get('/auth/users'); // Endpoint que retorna os usuários
+        const res = await api.get('/auth/users');
         setUsers(res.data);
       } catch (err) {
         console.error('Error loading users:', err);
@@ -72,18 +74,27 @@ const DashboardPage = () => {
     loadUsers();
   }, []);
 
+  // Carrega sales summary para calcular faturamento e total de vendas
+  useEffect(() => {
+    const loadSalesSummary = async () => {
+      try {
+        const res = await api.get('/reports/sales-summary');
+        setSalesSummary(res.data);
+      } catch (err) {
+        console.error('Error loading sales summary:', err);
+      }
+    };
+    loadSalesSummary();
+  }, []);
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pt-BR').format(date);
-  };
-
+  // Função que gera opções para os gráficos
   const getChartOptions = (title) => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -95,7 +106,7 @@ const DashboardPage = () => {
     animation: { duration: 2000, easing: 'easeOutQuart' },
   });
 
-  // Dados dos gráficos
+  // Dados dos gráficos (mantidos para referência, mas não serão renderizados)
   const contactsChartData = {
     labels: ['Total Contacts'],
     datasets: [
@@ -108,7 +119,7 @@ const DashboardPage = () => {
   };
 
   const opportunitiesChartData = {
-    labels: ['Opportunities'],
+    labels: ['Total Opportunities'],
     datasets: [
       {
         label: 'Total Opportunities',
@@ -119,7 +130,7 @@ const DashboardPage = () => {
   };
 
   const tasksChartData = {
-    labels: ['Tasks'],
+    labels: ['Total Tasks'],
     datasets: [
       {
         label: 'Total Tasks',
@@ -130,7 +141,7 @@ const DashboardPage = () => {
   };
 
   const communicationsChartData = {
-    labels: ['Communications'],
+    labels: ['Total Communications'],
     datasets: [
       {
         label: 'Total Communications',
@@ -140,46 +151,10 @@ const DashboardPage = () => {
     ],
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: 'top' }, title: { display: false } },
-  };
-
-  // Função para renderizar uma tabela simples
-  const renderTable = (data, columns, emptyMessage = "No records found.") => (
-    <table className="table table-sm table-striped dashboard-table">
-      <thead className="thead-light">
-        <tr>
-          {columns.map((col) => (
-            <th key={col.field}>{col.header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.length > 0 ? (
-          data.map((row) => (
-            <tr key={row.id}>
-              {columns.map((col) => (
-                <td key={col.field}>
-                  {col.field === 'creator_name'
-                    ? row.creator_name || row.user_id
-                    : row[col.field]}
-                </td>
-              ))}
-              <td className="text-end">{/* Ações podem ser inseridas aqui */}</td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan={columns.length + 1} className="text-center">
-              {emptyMessage}
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  );
+  // Agregação dos dados de sales summary
+  const totalRevenue = salesSummary.reduce((acc, row) => acc + parseFloat(row.total_value), 0);
+  const totalSales = salesSummary.reduce((acc, row) => acc + parseInt(row.opportunities_count, 10), 0);
+  const projectedRevenue = totalRevenue * 1.1; // Exemplo: 10% de crescimento
 
   const renderTimeframeSelector = () => (
     <div className="btn-group btn-group-sm" role="group" aria-label="Timeframe selector">
@@ -199,6 +174,7 @@ const DashboardPage = () => {
     <div>
       <Navbar />
       <div className="container dashboard-container">
+        {/* Cabeçalho com Seletor de Período */}
         <div className="dashboard-header row">
           <div className="col-12 col-md-6">
             <h2>Painel de Controle</h2>
@@ -209,9 +185,23 @@ const DashboardPage = () => {
           </div>
         </div>
         {error && <div className="alert alert-danger p-3 mb-4">{error}</div>}
-        {dashboard ? (
+        {loading ? (
+          <div className="d-flex justify-content-center align-items-center" style={{ height: '300px' }}>
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Carregando...</span>
+            </div>
+          </div>
+        ) : dashboard ? (
           <>
-            {/* Resumo de Estatísticas */}
+            {/* Componente SalesSummaryCards */}
+            <SalesSummaryCards
+              totalRevenue={totalRevenue}
+              totalSales={totalSales}
+              projectedRevenue={projectedRevenue}
+              formatCurrency={formatCurrency}
+            />
+
+            {/* Cartões de Resumo */}
             <div className="row mb-4">
               <div className="col-12 col-md-3 mb-3 mb-md-0">
                 <div className="card dashboard-card contacts-card">
@@ -278,109 +268,8 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
-            {/* Informações Detalhadas */}
-            <div className="row">
-              <div className="col-12 col-md-6 mb-4">
-                <div className="card dashboard-card">
-                  <div className="dashboard-card-header contacts-card" style={{ backgroundColor: 'var(--card-color)', color: 'white' }}>
-                    <div>Contatos</div>
-                    <button className="btn btn-sm text-white">Ver Todos</button>
-                  </div>
-                  <div className="dashboard-card-body">
-                    {renderTable(contacts, [
-                      { field: 'id', header: 'ID' },
-                      { field: 'name', header: 'Name' },
-                      { field: 'email', header: 'Email' },
-                      { field: 'phone', header: 'Phone' },
-                      { field: 'status', header: 'Status' },
-                      { field: 'lead_score', header: 'Score' },
-                      { field: 'creator_name', header: 'Created By' },
-                    ], "No contacts found.")}
-                  </div>
-                  <div className="dashboard-card-footer">
-                    <div className="chart-container">
-                      <Bar
-                        data={contactsChartData}
-                        options={{ ...chartOptions, title: { display: true, text: 'Contacts' } }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-md-6 mb-4">
-                <div className="card dashboard-card">
-                  <div className="dashboard-card-header opportunities-card" style={{ backgroundColor: 'var(--card-color)', color: 'white' }}>
-                    <div>Oportunidades</div>
-                    <button className="btn btn-sm text-white">Ver Todos</button>
-                  </div>
-                  <div className="dashboard-card-body">
-                    {renderTable(opportunities, [
-                      { field: 'title', header: 'Título' },
-                      { field: 'value', header: 'Valor' },
-                      { field: 'stage', header: 'Estágio' },
-                      { field: 'contact_id', header: 'ID Contato' },
-                    ])}
-                  </div>
-                  <div className="dashboard-card-footer">
-                    <div className="chart-container">
-                      <Bar
-                        data={opportunitiesChartData}
-                        options={{ ...chartOptions, title: { display: true, text: 'Oportunidades' } }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-md-6 mb-4">
-                <div className="card dashboard-card">
-                  <div className="dashboard-card-header tasks-card" style={{ backgroundColor: 'var(--card-color)', color: 'white' }}>
-                    <div>Tarefas</div>
-                    <button className="btn btn-sm text-white">Ver Todos</button>
-                  </div>
-                  <div className="dashboard-card-body">
-                    {renderTable(tasks, [
-                      { field: 'title', header: 'Título' },
-                      { field: 'description', header: 'Descrição' },
-                      { field: 'due_date', header: 'Data Limite' },
-                      { field: 'status', header: 'Status' },
-                    ])}
-                  </div>
-                  <div className="dashboard-card-footer">
-                    <div className="chart-container">
-                      <Bar
-                        data={tasksChartData}
-                        options={{ ...chartOptions, title: { display: true, text: 'Tarefas' } }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-md-6 mb-4">
-                <div className="card dashboard-card">
-                  <div className="dashboard-card-header communications-card" style={{ backgroundColor: 'var(--card-color)', color: 'white' }}>
-                    <div>Comunicações</div>
-                    <button className="btn btn-sm text-white">Ver Todos</button>
-                  </div>
-                  <div className="dashboard-card-body">
-                    {renderTable(communications, [
-                      { field: 'type', header: 'Type' },
-                      { field: 'content', header: 'Content' },
-                      { field: 'contact_id', header: 'ID Contato' },
-                      { field: 'created_at', header: 'Created At' },
-                    ])}
-                  </div>
-                  <div className="dashboard-card-footer">
-                    <div className="chart-container">
-                      <Bar
-                        data={communicationsChartData}
-                        options={{ ...chartOptions, title: { display: true, text: 'Comunicações' } }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Seção de Usuários: Exibida para todos (para teste) */}
+
+            {/* Seção de Usuários */}
             <div className="row">
               <div className="col-12">
                 <div className="card dashboard-card">
@@ -396,16 +285,22 @@ const DashboardPage = () => {
                               <th>ID</th>
                               <th>Username</th>
                               <th>Role</th>
+                              <th>Faturamento</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {users.map((u) => (
-                              <tr key={u.id}>
-                                <td>{u.id}</td>
-                                <td>{u.username}</td>
-                                <td>{u.role}</td>
-                              </tr>
-                            ))}
+                            {users.map((u) => {
+                              const userSales = salesSummary.filter(s => Number(s.user_id) === Number(u.id));
+                              const totalSales = userSales.reduce((acc, cur) => acc + parseFloat(cur.total_value), 0);
+                              return (
+                                <tr key={u.id}>
+                                  <td>{u.id}</td>
+                                  <td>{u.username}</td>
+                                  <td>{u.role}</td>
+                                  <td>{formatCurrency(totalSales)}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>

@@ -7,4 +7,7 @@ router.use(authMiddleware);
 
 router.get('/dashboard', reportsController.getDashboardReport);
 
-module.exports = router;
+router.get('/sales-summary', reportsController.getSalesSummary);
+
+module.exports = router; 
+ 

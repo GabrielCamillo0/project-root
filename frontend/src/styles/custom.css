@@ -1,42 +1,51 @@
 /* Custom styles for CRM MVP */
 body {
-    background-color: #cbd4d6;
-  }
-  
-  h2 {
-    margin-bottom: 20px;
-  }
-  /* PageStyles.css */
+  background-color: #ffffff;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+/* PageStyles.css */
 .page-container {
-  padding: 20px 0;
+padding: 20px 0;
 }
 
 .page-card {
-  border: none;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+border: none;
+border-radius: 8px;
+overflow: hidden;
+margin-bottom: 20px;
+box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .page-card-header {
-  font-size: 1.1rem;
-  font-weight: 600;
-  padding: 10px;
-  color: #fff;
+font-size: 1.1rem;
+font-weight: 600;
+padding: 10px;
+color: #fff;
 }
 
 .page-card-body {
-  padding: 15px;
-  background-color: #f8f9fa;
+padding: 15px;
+background-color: #f8f9fa;
 }
 
 .page-card-footer {
-  background-color: #fff;
-  padding: 10px;
-  border-top: 1px solid #dee2e6;
+background-color: #fff;
+padding: 10px;
+border-top: 1px solid #dee2e6;
 }
 
 .dashboard-table {
-  font-size: 0.8rem;
+font-size: 0.8rem;
+}
+
+/* Override para que o conteúdo da dashboard não fique tão centralizado */
+.container.dashboard-container {
+  max-width: 80% !important;
+  margin-left: 10% !important;
+  margin-right: 0% !important;
+  padding: 20px;
 }

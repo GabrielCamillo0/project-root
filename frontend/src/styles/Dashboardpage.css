@@ -1,175 +1,111 @@
-/* DashboardPage.css - Premium Version */
+/* src/styles/Dashboard.css */
+
 .dashboard-container {
-  padding: 30px 20px;
-  background-color: #f6f8fa;
-  min-height: 100vh;
+  padding: 20px;
+  margin-top: 20px;
 }
 
 .dashboard-header {
-  margin-bottom: 28px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #e1e4e8;
-}
-
-.dashboard-header h2 {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #212529;
-  margin: 0;
+  margin-bottom: 25px;
 }
 
 .dashboard-subtitle {
   color: #6c757d;
-  font-size: 0.95rem;
-  margin-top: 4px;
+  margin-bottom: 0;
 }
 
 .dashboard-card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s, box-shadow 0.3s;
-  height: 100%;
+  border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  height: 100%;
 }
 
 .dashboard-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dashboard-card-header {
-  font-size: 1.1rem;
+  padding: 12px 15px;
   font-weight: 600;
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dashboard-card-header .card-header-icon {
-  font-size: 1.4rem;
 }
 
 .dashboard-card-body {
-  padding: 0;
-  background-color: #ffffff;
-  max-height: 280px;
-  overflow-y: auto;
-  scrollbar-width: thin;
+  padding: 15px;
 }
 
-.dashboard-card-body::-webkit-scrollbar {
-  width: 6px;
+.dashboard-stats {
+  text-align: center;
+  margin-bottom: 10px;
 }
 
-.dashboard-card-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.dashboard-card-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.stat-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-transform: uppercase;
 }
 
-.dashboard-card-footer {
-  background-color: #ffffff;
-  padding: 16px 20px;
-  border-top: 1px solid #efefef;
+.sales-summary-card {
+  margin-bottom: 25px;
 }
 
-.chart-container {
-  height: 180px;
-  padding: 10px 0;
+.sales-summary-item {
+  text-align: center;
+  padding: 10px 15px;
+}
+
+.sales-summary-item h5 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #495057;
+}
+
+.sales-summary-item p {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #212529;
+}
+
+.contacts-card .card-header {
+  background-color: #007bff !important;
+}
+
+.opportunities-card .card-header {
+  background-color: #28a745 !important;
+}
+
+.tasks-card .card-header {
+  background-color: #ffc107 !important;
+}
+
+.communications-card .card-header {
+  background-color: #dc3545 !important;
 }
 
 .dashboard-table {
-  width: 100%;
-  margin-bottom: 0;
   font-size: 0.9rem;
 }
 
 .dashboard-table th {
-  background-color: #f8f9fa;
   font-weight: 600;
-  color: #495057;
-  border-top: none;
-  border-bottom: 2px solid #dee2e6;
-  padding: 12px 10px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.dashboard-table td {
-  padding: 10px;
-  vertical-align: middle;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.dashboard-table tr:hover {
   background-color: #f8f9fa;
 }
 
-.status-badge {
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: 500;
-  display: inline-block;
-}
-
-.status-active {
-  background-color: #e6f7ee;
-  color: #0e8a44;
-}
-
-.status-inactive {
-  background-color: #feeae9;
-  color: #d63939;
-}
-
-.status-pending {
-  background-color: #fff8e6;
-  color: #b07800;
-}
-
-.dashboard-stats {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.stat-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-right: 10px;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: #6c757d;
-}
-
-/* Definindo cores para cada tipo de card */
-.contacts-card { --card-color: #4361ee; }
-.opportunities-card { --card-color: #3a86ff; }
-.tasks-card { --card-color: #7209b7; }
-.communications-card { --card-color: #f72585; }
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
-  .dashboard-card-body {
-    max-height: 220px;
+  .stat-value {
+    font-size: 1.5rem;
   }
   
-  .chart-container {
-    height: 140px;
-  }
-  
-  .dashboard-table {
-    font-size: 0.8rem;
+  .sales-summary-item p {
+    font-size: 1.2rem;
   }
 }
