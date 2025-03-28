@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/TopBar.css';
 
 const TopBar = () => {
@@ -7,12 +8,9 @@ const TopBar = () => {
   useEffect(() => {
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar) return;
-
     const updateState = () => {
       setCollapsed(sidebar.classList.contains('collapsed'));
     };
-
-    // Atualiza imediatamente e observa mudanças na classe
     updateState();
     const observer = new MutationObserver(updateState);
     observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
@@ -20,16 +18,25 @@ const TopBar = () => {
   }, []);
 
   const handleToggle = () => {
-    // Dispara o evento que a Navbar está escutando
     window.dispatchEvent(new Event('toggleSidebar'));
   };
 
   return (
     <div className="top-bar">
       <div className="top-bar-left">
-        <button className="sidebar-toggle" onClick={handleToggle}>
-          <i className={`fa ${collapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
+        <Link to="/" className="top-bar-logo">
+          <img
+            src="https://i.imgur.com/Hw6gtnQ.png"
+            className={`top-bar-logo-img ${collapsed ? 'hidden' : ''}`}
+            alt="Logo"
+          />
+        </Link>
+        <button className="navbar-toggler sidebar-toggle" type="button" onClick={handleToggle}>
+          <span className="navbar-toggler-icon"></span>
         </button>
+      </div>
+      <div className="top-bar-right">
+        {/* Outros elementos, se necessário */}
       </div>
     </div>
   );

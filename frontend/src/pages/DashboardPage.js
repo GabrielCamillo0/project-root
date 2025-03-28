@@ -15,12 +15,12 @@ import {
 import '../styles/Dashboardpage.css';
 import { FaUser, FaMoneyBillWave, FaTasks, FaComments } from 'react-icons/fa';
 import useAuth from '../hooks/useAuth';
-import SalesSummaryCards from '../components/SalesSummaryCards'; // Importa o componente SalesSummaryCards
+import SalesSummaryCards from '../components/SalesSummaryCards';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const DashboardPage = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); // Usuário logado
   const [dashboard, setDashboard] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
@@ -32,17 +32,17 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('month');
 
-  // Carrega dados principais do dashboard
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
+        // Carrega dados em paralelo
         const [dashboardRes, contactsRes, opportunitiesRes, tasksRes, communicationsRes] = await Promise.all([
           api.get('/reports/dashboard'),
           api.get('/contacts'),
           api.get('/opportunities'),
           api.get('/tasks'),
-          api.get('/communications'),
+          api.get('/communications')
         ]);
         setDashboard(dashboardRes.data);
         setContacts(contactsRes.data);
@@ -61,11 +61,11 @@ const DashboardPage = () => {
     loadData();
   }, [timeframe]);
 
-  // Carrega usuários (para exibição na seção de usuários)
+  // Carrega os usuários (para exibição na seção de usuários)
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const res = await api.get('/auth/users');
+        const res = await api.get('/auth/users'); // Endpoint que retorna os usuários
         setUsers(res.data);
       } catch (err) {
         console.error('Error loading users:', err);
@@ -74,7 +74,7 @@ const DashboardPage = () => {
     loadUsers();
   }, []);
 
-  // Carrega sales summary para calcular faturamento e total de vendas
+  // Carrega o sales summary para faturamento
   useEffect(() => {
     const loadSalesSummary = async () => {
       try {
@@ -87,26 +87,20 @@ const DashboardPage = () => {
     loadSalesSummary();
   }, []);
 
+  // Formatação
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL',
+      currency: 'BRL'
     }).format(value);
   };
 
-  // Função que gera opções para os gráficos
-  const getChartOptions = (title) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: title },
-    },
-    scales: { y: { beginAtZero: true } },
-    animation: { duration: 2000, easing: 'easeOutQuart' },
-  });
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('pt-BR').format(date);
+  };
 
-  // Dados dos gráficos (mantidos para referência, mas não serão renderizados)
+  // Dados dos gráficos (mantidos para referência, mas não são renderizados)
   const contactsChartData = {
     labels: ['Total Contacts'],
     datasets: [
@@ -123,7 +117,8 @@ const DashboardPage = () => {
     datasets: [
       {
         label: 'Total Opportunities',
-        data: dashboard ? [Number(dashboard.opportunitiesCount)] : [0],
+        // Aqui não usamos os dados do dashboard, pois vamos calcular com base nas oportunidades ativas (não finalizadas)
+        data: [opportunities.filter(opp => !opp.finalized).length],
         backgroundColor: 'rgba(153,102,255,0.6)',
       },
     ],
@@ -151,6 +146,17 @@ const DashboardPage = () => {
     ],
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: false },
+    },
+    scales: { y: { beginAtZero: true } },
+    animation: { duration: 2000, easing: 'easeOutQuart' },
+  };
+
   // Agregação dos dados de sales summary
   const totalRevenue = salesSummary.reduce((acc, row) => acc + parseFloat(row.total_value), 0);
   const totalSales = salesSummary.reduce((acc, row) => acc + parseInt(row.opportunities_count, 10), 0);
@@ -170,6 +176,11 @@ const DashboardPage = () => {
     </div>
   );
 
+  // Calcula oportunidades ativas (não finalizadas)
+  const activeOpportunities = opportunities.filter(opp => !opp.finalized);
+  const activeOpportunitiesCount = activeOpportunities.length;
+  const activeOpportunitiesTotal = activeOpportunities.reduce((acc, opp) => acc + Number(opp.value), 0);
+
   return (
     <div>
       <Navbar />
@@ -178,7 +189,7 @@ const DashboardPage = () => {
         <div className="dashboard-header row">
           <div className="col-12 col-md-6">
             <h2>Painel de Controle</h2>
-            <p className="dashboard-subtitle">Visão geral da atividade do CRM</p>
+            <p className="dashboard-subtitle">Visão geral da atividade</p>
           </div>
           <div className="col-12 col-md-6 d-flex justify-content-md-end align-items-center">
             {renderTimeframeSelector()}
@@ -226,11 +237,11 @@ const DashboardPage = () => {
                   </div>
                   <div className="card-body dashboard-card-body">
                     <div className="dashboard-stats">
-                      <div className="stat-value">{dashboard.opportunitiesCount || 0}</div>
+                      <div className="stat-value">{activeOpportunitiesCount}</div>
                       <div className="stat-label">total</div>
                     </div>
                     <div className="text-success small">
-                      <strong>{formatCurrency(dashboard.opportunitiesTotal || 0)}</strong> em potencial
+                      <strong>{formatCurrency(activeOpportunitiesTotal)}</strong> em potencial
                     </div>
                   </div>
                 </div>

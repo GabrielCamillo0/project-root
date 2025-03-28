@@ -1,0 +1,67 @@
+/* src/styles/Contacts.css */
+
+/* Container principal da página de contatos */
+.contacts-container {
+    padding: 20px;
+    margin-top: 20px;
+  }
+  
+  /* Cabeçalho da página */
+  .contacts-header {
+    margin-bottom: 25px;
+  }
+  
+  /* Card que envolve a lista de contatos */
+  .contacts-card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    margin-bottom: 20px;
+  }
+  
+  .contacts-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Cabeçalho do card, com cor de fundo customizada */
+  .contacts-card-header {
+    padding: 12px 15px;
+    background-color: #6200ea !important;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  
+  /* Corpo do card */
+  .contacts-card-body {
+    padding: 15px;
+  }
+  
+  /* Estilização da tabela de contatos */
+  .contacts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+  
+  .contacts-table th,
+  .contacts-table td {
+    padding: 10px;
+    border: 1px solid #ffffff;
+    text-align: left;
+  }
+  
+  .contacts-table th {
+    font-weight: 700;
+    background-color: #ffffff;
+  }
+  
+  /* Ajuste responsivo para telas menores */
+  @media (max-width: 768px) {
+    .contacts-table {
+      font-size: 1rem;
+    }
+  }
+  

@@ -1,151 +1,90 @@
-/* TopBar Styles */
 .top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 50px;
-    background-color: #222;
-    color: white;
-    padding: 0 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  background-color: #e4e3e3;
+  color: white;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-logo {
+  text-decoration: none;
+  margin-right: 40px; /* Espaço entre o logo e o botão */
+}
+
+.top-bar-logo-img {
+  height: 60px;
+  width: auto;
+  cursor: pointer;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.top-bar-logo-img:hover {
+  transform: scale(1.05);
+}
+
+.top-bar-logo-img.hidden {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+
+/* Estilização personalizada para o botão toggle */
+.navbar-toggler {
+  border: none;
+  background-color: #e4e3e3;
+  border-radius: 4px;
+  padding: 8px 12px;
   
-  .top-bar-left {
-    display: flex;
-    align-items: center;
-  }
-  
-  .top-bar-logo {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: white;
-  }
-  
-  .top-bar-logo:hover {
-    text-decoration: none;
-    color: white;
-  }
-  
-  .top-bar-logo-img {
-    height: 30px;
-    margin-right: 10px;
-  }
-  
-  .top-bar-brand {
-    font-size: 18px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    color: #f78c41;
-  }
-  
-  .top-bar-sub-brand {
-    font-size: 10px;
-    margin-left: 4px;
-    align-self: flex-end;
-    margin-bottom: 4px;
-    opacity: 0.7;
-    color: #f78c41;
-  }
-  
-  .top-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .top-bar-btn {
-    background: transparent;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 7px 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s;
-  }
-  
-  .top-bar-btn:hover {
-    background-color: #333;
-  }
-  
-  .top-bar-action-btn {
-    position: relative;
-  }
-  
-  .top-bar-action-btn::after {
-    content: '';
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 8px;
-    height: 8px;
-    background-color: #f44336;
-    border-radius: 50%;
-  }
-  
-  .top-bar-orange-btn {
-    background-color: #f78c41;
-    color: white;
-    border-radius: 4px;
-    padding: 7px 15px;
-    font-weight: 500;
-  }
-  
-  .top-bar-orange-btn:hover {
-    background-color: #e67e22;
-  }
-  
-  .top-bar-badge {
-    background-color: #f44336;
-    color: white;
-    font-size: 12px;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .top-bar-user {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 4px;
-  }
-  
-  .top-bar-user:hover {
-    background-color: #333;
-  }
-  
-  .top-bar-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-left: 8px;
-  }
-  
-  /* Adjust main content to make room for TopBar */
-  .app-container {
-    padding-top: 50px;
-  }
-  
-  /* Adjust sidebar to account for TopBar */
-  .sidebar {
-    top: 50px;
-    height: calc(100vh - 50px);
-  }
-  
-  .main-content {
-    margin-top: 50px;
-    min-height: calc(100vh - 50px);
-  }
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.navbar-toggler:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.05);
+}
+
+.navbar-toggler:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* O ícone padrão do toggle do Bootstrap é definido via background-image */
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.7)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* Ajuste o espaço do conteúdo principal para que não fique oculto pelo TopBar */
+.app-container {
+  padding-top: 50px;
+}
+
+.sidebar {
+  top: 50px;
+  height: calc(100vh - 50px);
+}
+
+.main-content {
+  margin-top: 50px;
+  min-height: calc(100vh - 50px);
+}

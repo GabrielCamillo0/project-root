@@ -1,8 +1,8 @@
-// frontend/src/pages/TasksPage.js
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import FormInput from '../components/Forminput';
 import api from '../services/api';
+import { Modal, Button } from 'react-bootstrap';
 import '../styles/custom.css';
 
 const TasksPage = () => {
@@ -16,6 +16,7 @@ const TasksPage = () => {
     contact_id: ''
   });
   const [editingId, setEditingId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchTasks = async () => {
     try {
@@ -47,6 +48,7 @@ const TasksPage = () => {
         setTasks([...tasks, res.data]);
       }
       setForm({ title: '', description: '', due_date: '', status: 'pending', contact_id: '' });
+      setShowModal(false);
     } catch (err) {
       console.error('Error saving task:', err);
       setError('Error saving task');
@@ -62,6 +64,7 @@ const TasksPage = () => {
       status: task.status,
       contact_id: task.contact_id || ''
     });
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -74,32 +77,36 @@ const TasksPage = () => {
     }
   };
 
-  // Função para criar follow-up task
-  const handleFollowUp = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await api.post('/tasks/follow-up', {
-        contact_id: form.contact_id,
-        description: form.description
-      });
-      setTasks([...tasks, res.data]);
-    } catch (err) {
-      console.error('Error creating follow-up task:', err);
-      setError('Error creating follow-up task');
-    }
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingId(null);
+    setForm({ title: '', description: '', due_date: '', status: 'pending', contact_id: '' });
+  };
+
+  const handleShowModal = () => {
+    setEditingId(null);
+    setForm({ title: '', description: '', due_date: '', status: 'pending', contact_id: '' });
+    setShowModal(true);
   };
 
   return (
     <div>
       <Navbar />
-      <div className="container page-container">
-        <h2>Tasks</h2>
+      <div className="container page-container my-4">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2>Tasks</h2>
+          <Button variant="primary" onClick={handleShowModal}>
+            New Task
+          </Button>
+        </div>
         {error && <div className="alert alert-danger">{error}</div>}
-        <div className="card page-card">
-          <div className="card-header page-card-header bg-warning text-dark">
-            Task Form
-          </div>
-          <div className="card-body page-card-body">
+
+        {/* Modal Popup para o formulário */}
+        <Modal show={showModal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>{editingId ? 'Edit Task' : 'New Task'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
             <form onSubmit={handleSubmit}>
               <FormInput
                 label="Title"
@@ -133,24 +140,22 @@ const TasksPage = () => {
                 onChange={handleChange}
                 placeholder="Enter task status"
               />
-              <button type="submit" className="btn btn-primary">
+              <FormInput
+                label="Contact ID"
+                type="text"
+                name="contact_id"
+                value={form.contact_id}
+                onChange={handleChange}
+                placeholder="Enter contact ID"
+              />
+              <Button type="submit" variant="primary" className="mt-3">
                 {editingId ? 'Update Task' : 'Create Task'}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className="btn btn-secondary ml-2"
-                  onClick={() => {
-                    setEditingId(null);
-                    setForm({ title: '', description: '', due_date: '', status: 'pending', contact_id: '' });
-                  }}
-                >
-                  Cancel
-                </button>
-              )}
+              </Button>
             </form>
-          </div>
-        </div>
+          </Modal.Body>
+        </Modal>
+
+        {/* Lista de Tasks */}
         <div className="card page-card">
           <div className="card-header page-card-header">
             Tasks List
@@ -166,38 +171,16 @@ const TasksPage = () => {
                     </p>
                   </div>
                   <div>
-                    <button className="btn btn-sm btn-warning mr-2" onClick={() => handleEdit(task)}>Edit</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(task.id)}>Delete</button>
+                    <Button variant="warning" size="sm" onClick={() => handleEdit(task)} className="mr-2">
+                      Edit
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(task.id)}>
+                      Delete
+                    </Button>
                   </div>
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-        <div className="card page-card">
-          <div className="card-header page-card-header bg-secondary text-white">
-            Create Follow-up Task
-          </div>
-          <div className="card-body page-card-body">
-            <form onSubmit={handleFollowUp}>
-              <FormInput
-                label="Contact ID"
-                type="text"
-                name="contact_id"
-                value={form.contact_id}
-                onChange={handleChange}
-                placeholder="Enter associated contact ID"
-              />
-              <FormInput
-                label="Follow-up Description"
-                type="text"
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                placeholder="Enter follow-up description"
-              />
-              <button type="submit" className="btn btn-info">Create Follow-up</button>
-            </form>
           </div>
         </div>
       </div>

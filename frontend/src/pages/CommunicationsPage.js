@@ -1,23 +1,32 @@
-// frontend/src/pages/CommunicationsPage.js
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import FormInput from '../components/Forminput';
 import api from '../services/api';
+import { Modal, Button } from 'react-bootstrap';
 import '../styles/custom.css';
 
 const CommunicationsPage = () => {
   const [communications, setCommunications] = useState([]);
   const [error, setError] = useState('');
+  
+  // Estado para o formulário principal de comunicação (criação/edição)
   const [form, setForm] = useState({
     type: '',
     content: '',
     contact_id: ''
   });
   const [editingId, setEditingId] = useState(null);
+  const [showCommModal, setShowCommModal] = useState(false);
+  
+  // Estado para o formulário de follow-up
+  const [followUpForm, setFollowUpForm] = useState({
+    contact_id: '',
+    content: ''
+  });
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
 
   const fetchCommunications = async () => {
     try {
-      // Para gestores, retorna todos; para usuários comuns, a filtragem será feita no backend
       const res = await api.get('/communications');
       setCommunications(res.data);
     } catch (err) {
@@ -30,11 +39,12 @@ const CommunicationsPage = () => {
     fetchCommunications();
   }, []);
 
+  // Handlers para o formulário principal de comunicação
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleCommSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingId) {
@@ -46,6 +56,7 @@ const CommunicationsPage = () => {
         setCommunications([...communications, res.data]);
       }
       setForm({ type: '', content: '', contact_id: '' });
+      setShowCommModal(false);
     } catch (err) {
       console.error('Error saving communication:', err);
       setError('Error saving communication');
@@ -59,6 +70,7 @@ const CommunicationsPage = () => {
       content: comm.content,
       contact_id: comm.contact_id
     });
+    setShowCommModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -71,18 +83,75 @@ const CommunicationsPage = () => {
     }
   };
 
+  const handleCloseCommModal = () => {
+    setShowCommModal(false);
+    setEditingId(null);
+    setForm({ type: '', content: '', contact_id: '' });
+  };
+
+  const handleShowCommModal = () => {
+    setEditingId(null);
+    setForm({ type: '', content: '', contact_id: '' });
+    setShowCommModal(true);
+  };
+
+  // Handlers para o formulário de follow-up
+  const handleFollowUpChange = (e) => {
+    setFollowUpForm({ ...followUpForm, [e.target.name]: e.target.value });
+  };
+
+  const handleFollowUpSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/communications/follow-up', {
+        contact_id: followUpForm.contact_id,
+        content: followUpForm.content,
+        type: 'follow-up'
+      });
+      setCommunications([...communications, res.data]);
+      setFollowUpForm({ contact_id: '', content: '' });
+      setShowFollowUpModal(false);
+    } catch (err) {
+      console.error('Error creating follow-up communication:', err);
+      setError('Error creating follow-up communication');
+    }
+  };
+
+  const handleCloseFollowUpModal = () => {
+    setShowFollowUpModal(false);
+    setFollowUpForm({ contact_id: '', content: '' });
+  };
+
+  const handleShowFollowUpModal = () => {
+    setFollowUpForm({ contact_id: '', content: '' });
+    setShowFollowUpModal(true);
+  };
+
   return (
     <div>
       <Navbar />
-      <div className="container page-container">
-        <h2>Communications</h2>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <div className="card page-card">
-          <div className="card-header page-card-header bg-danger">
-            Communication Form
+      <div className="container page-container my-4">
+        {/* Cabeçalho com dois botões: um para comunicação e outro para follow-up */}
+        <div className="d-flex flex-column align-items-end mb-3">
+          <h2>Communications</h2>
+          <div className="d-flex flex-column align-items-end">
+            <Button variant="primary" onClick={handleShowCommModal} className="mb-2">
+              New Communication
+            </Button>
+            <Button variant="secondary" onClick={handleShowFollowUpModal}>
+              New Follow-up
+            </Button>
           </div>
-          <div className="card-body page-card-body">
-            <form onSubmit={handleSubmit}>
+        </div>
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        {/* Modal para o formulário principal de comunicação */}
+        <Modal show={showCommModal} onHide={handleCloseCommModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>{editingId ? 'Edit Communication' : 'New Communication'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleCommSubmit}>
               <FormInput
                 label="Type"
                 type="text"
@@ -107,24 +176,44 @@ const CommunicationsPage = () => {
                 onChange={handleChange}
                 placeholder="Enter contact ID"
               />
-              <button type="submit" className="btn btn-primary">
+              <Button type="submit" variant="primary" className="mt-3">
                 {editingId ? 'Update Communication' : 'Create Communication'}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className="btn btn-secondary ml-2"
-                  onClick={() => {
-                    setEditingId(null);
-                    setForm({ type: '', content: '', contact_id: '' });
-                  }}
-                >
-                  Cancel
-                </button>
-              )}
+              </Button>
             </form>
-          </div>
-        </div>
+          </Modal.Body>
+        </Modal>
+
+        {/* Modal para o formulário de follow-up */}
+        <Modal show={showFollowUpModal} onHide={handleCloseFollowUpModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>New Follow-up Communication</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleFollowUpSubmit}>
+              <FormInput
+                label="Contact ID"
+                type="text"
+                name="contact_id"
+                value={followUpForm.contact_id}
+                onChange={handleFollowUpChange}
+                placeholder="Enter contact ID"
+              />
+              <FormInput
+                label="Follow-up Content"
+                type="text"
+                name="content"
+                value={followUpForm.content}
+                onChange={handleFollowUpChange}
+                placeholder="Enter follow-up message"
+              />
+              <Button type="submit" variant="secondary" className="mt-3">
+                Create Follow-up
+              </Button>
+            </form>
+          </Modal.Body>
+        </Modal>
+
+        {/* Lista de Communications */}
         <div className="card page-card">
           <div className="card-header page-card-header">
             Communications List
@@ -140,8 +229,12 @@ const CommunicationsPage = () => {
                     </p>
                   </div>
                   <div>
-                    <button className="btn btn-sm btn-warning mr-2" onClick={() => handleEdit(comm)}>Edit</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(comm.id)}>Delete</button>
+                    <Button variant="warning" size="sm" onClick={() => handleEdit(comm)} className="mr-2">
+                      Edit
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(comm.id)}>
+                      Delete
+                    </Button>
                   </div>
                 </li>
               ))}

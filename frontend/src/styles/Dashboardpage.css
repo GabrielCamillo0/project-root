@@ -1,4 +1,4 @@
-/* src/styles/Dashboard.css */
+
 
 .dashboard-container {
   padding: 20px;
@@ -76,27 +76,29 @@
 }
 
 .contacts-card .card-header {
-  background-color: #007bff !important;
+  background-color: #6200ea !important;
 }
 
 .opportunities-card .card-header {
-  background-color: #28a745 !important;
+  background-color: #6200ea !important;
 }
 
 .tasks-card .card-header {
-  background-color: #ffc107 !important;
+  background-color: #6200ea !important;
+  color: #ffffff !important;  
 }
 
 .communications-card .card-header {
-  background-color: #dc3545 !important;
+  background-color: #6200ea !important;
 }
 
 .dashboard-table {
-  font-size: 0.9rem;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .dashboard-table th {
-  font-weight: 600;
+  font-weight: 700;
   background-color: #f8f9fa;
 }
 

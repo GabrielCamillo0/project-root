@@ -1,9 +1,11 @@
-// frontend/src/pages/ContactsPage.js
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import FormInput from '../components/Forminput';
 import api from '../services/api';
+import { Modal, Button } from 'react-bootstrap';
 import '../styles/custom.css';
+import '../styles/Contacts.css';
+
 
 const ContactsPage = () => {
   const [contacts, setContacts] = useState([]);
@@ -16,6 +18,7 @@ const ContactsPage = () => {
     lead_score: 0
   });
   const [editingId, setEditingId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchContacts = async () => {
     try {
@@ -47,6 +50,7 @@ const ContactsPage = () => {
         setContacts([...contacts, res.data]);
       }
       setForm({ name: '', email: '', phone: '', status: 'lead', lead_score: 0 });
+      setShowModal(false);
     } catch (err) {
       console.error('Error saving contact:', err);
       setError('Error saving contact');
@@ -62,6 +66,7 @@ const ContactsPage = () => {
       status: contact.status,
       lead_score: contact.lead_score || 0,
     });
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -74,17 +79,36 @@ const ContactsPage = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingId(null);
+    setForm({ name: '', email: '', phone: '', status: 'lead', lead_score: 0 });
+  };
+
+  const handleShowModal = () => {
+    setEditingId(null);
+    setForm({ name: '', email: '', phone: '', status: 'lead', lead_score: 0 });
+    setShowModal(true);
+  };
+
   return (
     <div>
       <Navbar />
       <div className="container page-container mt-5">
-        <h2>Contacts</h2>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2>Contacts</h2>
+          <Button variant="primary" onClick={handleShowModal}>
+            New Contact
+          </Button>
+        </div>
         {error && <div className="alert alert-danger">{error}</div>}
-        <div className="card page-card">
-          <div className="card-header page-card-header bg-info">
-            Contact Form
-          </div>
-          <div className="card-body page-card-body">
+
+        {/* Modal Popup para o formulário */}
+        <Modal show={showModal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>{editingId ? 'Edit Contact' : 'New Contact'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
             <form onSubmit={handleSubmit}>
               <FormInput
                 label="Name"
@@ -126,30 +150,20 @@ const ContactsPage = () => {
                 onChange={handleChange}
                 placeholder="Enter score"
               />
-              <button type="submit" className="btn btn-primary">
+              <Button type="submit" variant="primary" className="mt-3">
                 {editingId ? 'Update Contact' : 'Create Contact'}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className="btn btn-secondary ml-2"
-                  onClick={() => {
-                    setEditingId(null);
-                    setForm({ name: '', email: '', phone: '', status: 'lead', lead_score: 0 });
-                  }}
-                >
-                  Cancel
-                </button>
-              )}
+              </Button>
             </form>
-          </div>
-        </div>
+          </Modal.Body>
+        </Modal>
+
+        {/* Tabela de contatos */}
         <div className="card page-card">
           <div className="card-header page-card-header">
             Contacts List
           </div>
           <div className="card-body page-card-body">
-            <table className="table table-sm table-striped">
+            <table className="contacts-table">
               <thead className="thead-light">
                 <tr>
                   <th>ID</th>

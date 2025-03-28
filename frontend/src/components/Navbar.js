@@ -1,32 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuth from '../hooks/useAuth';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
   const { auth, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Estado de colapso e se o modo manual (toggle) está ativo
   const [collapsed, setCollapsed] = useState(true);
   const [manual, setManual] = useState(false);
+  
+  // Estado para desabilitar a transição (usado em troca de página)
+  const [disableTransition, setDisableTransition] = useState(false);
+  
+  const initialMount = useRef(true);
 
-  const toggleSidebar = () => {
-    const newCollapsed = !collapsed;
-    setCollapsed(newCollapsed);
-    // Se a sidebar for expandida manualmente (collapsed === false) desativa os efeitos de hover.
-    setManual(!newCollapsed);
-  };
+  // Função para alternar o estado da sidebar via botão (TopBar)
+  const toggleSidebar = useCallback(() => {
+    // Ao clicar, reabilitamos a transição para o efeito de toggle
+    setDisableTransition(false);
+    if (collapsed) {
+      setCollapsed(false);
+      setManual(true);
+    } else {
+      setCollapsed(true);
+      setManual(false);
+    }
+  }, [collapsed]);
 
   // Escuta o evento global disparado pelo TopBar
   useEffect(() => {
     const handleToggleEvent = () => {
       toggleSidebar();
     };
-
     window.addEventListener('toggleSidebar', handleToggleEvent);
-    return () => {
-      window.removeEventListener('toggleSidebar', handleToggleEvent);
-    };
-  }, [collapsed]); // Note: usamos collapsed para refletir a alteração
+    return () => window.removeEventListener('toggleSidebar', handleToggleEvent);
+  }, [toggleSidebar]);
+
+  // Ao trocar de página, force a sidebar a ficar expandida sem animação
+  useEffect(() => {
+    // No primeiro carregamento não forçamos nada
+    if (initialMount.current) {
+      initialMount.current = false;
+      return;
+    }
+    // Força a sidebar a ficar aberta e ativa o modo manual
+    setCollapsed(false);
+    setManual(true);
+    // Desativa a transição para evitar animação
+    setDisableTransition(true);
+    // (Opcional) Você pode reabilitar a transição após um curto intervalo, 
+    // mas se deseja que a troca de página não tenha animação, deixe desabilitado.
+  }, [location.pathname]);
+
+  // Eventos de hover só atuam se não estivermos em modo manual
+  const handleMouseEnter = () => {
+    if (!manual) {
+      setCollapsed(false);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!manual) {
+      setCollapsed(true);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -36,17 +76,11 @@ const Navbar = () => {
   return (
     <div 
       className={`sidebar ${collapsed ? 'collapsed' : 'expanded'}`}
-      {...(!manual && {
-        onMouseEnter: () => setCollapsed(false),
-        onMouseLeave: () => setCollapsed(true)
-      })}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{ transition: disableTransition ? 'none' : 'width 0.3s ease-in-out' }}
     >
-      <div className="sidebar-content">
-        <div className="sidebar-logo">
-          <Link to="/">
-            <img src="/logo.png" alt="Logo" />
-          </Link>
-        </div>
+      <div className="sidebar-content">       
         {auth.token && (
           <ul className="nav">
             <li className="nav-item">
@@ -67,12 +101,7 @@ const Navbar = () => {
                 <span className="nav-text">Opportunities</span>
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/accounts">
-                <i className="fa fa-briefcase"></i>
-                <span className="nav-text">Accounts</span>
-              </Link>
-            </li>
+            
             <li className="nav-item">
               <Link className="nav-link" to="/tasks">
                 <i className="fa fa-tasks"></i>

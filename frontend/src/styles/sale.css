@@ -2,8 +2,8 @@
 
 /* Variáveis para alterar as cores do texto */
 :root {
-    --sales-summary-text-color: #333333; /* Cor do corpo dos cards */
-    --sales-summary-header-text-color: #000000 ; /* Cor do título dos cards */
+    --sales-summary-text-color: #000000; /* Cor do corpo dos cards */
+    --sales-summary-header-text-color: #ffffff ; /* Cor do título dos cards */
   }
   
   .sales-summary-container {
@@ -29,7 +29,7 @@
   }
   
   .sales-summary-card .card-header {
-    background: linear-gradient(135deg, #ffffff, #ffffff);
+    background: linear-gradient(135deg, #6200ea, #6200ea);
     color: var(--sales-summary-header-text-color)!important;
     padding: 16px;
     font-size: 1.1rem;
