@@ -1,4 +1,3 @@
-// frontend/src/pages/OpportunitiesPage.js
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import FormInput from '../components/Forminput';
@@ -17,7 +16,8 @@ const OpportunitiesPage = () => {
     title: '',
     value: '',
     stage: 'new',
-    contact_id: ''
+    contact_id: '',
+    description: ''
   });
   const [editingId, setEditingId] = useState(null);
   const [showModal, setShowModal] = useState(false); // Modal para criação/edição
@@ -43,23 +43,25 @@ const OpportunitiesPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        const res = await api.put(`/opportunities/${editingId}`, form);
-        setOpportunities(opportunities.map(opp => opp.id === editingId ? res.data : opp));
-        setEditingId(null);
-      } else {
-        const res = await api.post('/opportunities', form);
-        setOpportunities([...opportunities, res.data]);
-      }
-      setForm({ title: '', value: '', stage: 'new', contact_id: '' });
-      setShowModal(false);
-    } catch (err) {
-      console.error('Error saving opportunity:', err);
-      setError('Error saving opportunity');
+  e.preventDefault();
+  try {
+    if (editingId) {
+      // Chama o novo endpoint para atualizar todos os parâmetros
+      const res = await api.put(`/opportunities/${editingId}/parameters`, form);
+      setOpportunities(opportunities.map(opp => opp.id === editingId ? res.data : opp));
+      setEditingId(null);
+    } else {
+      const res = await api.post('/opportunities', form);
+      setOpportunities([...opportunities, res.data]);
     }
-  };
+    setForm({ title: '', value: '', stage: 'new', contact_id: '', description: '' });
+    setShowModal(false);
+  } catch (err) {
+    console.error('Error saving opportunity:', err);
+    setError('Error saving opportunity');
+  }
+};
+
 
   const handleEdit = (opp) => {
     setEditingId(opp.id);
@@ -67,7 +69,8 @@ const OpportunitiesPage = () => {
       title: opp.title,
       value: opp.value,
       stage: opp.stage,
-      contact_id: opp.contact_id
+      contact_id: opp.contact_id,
+      description: opp.description || ''
     });
     setShowModal(true);
   };
@@ -96,7 +99,7 @@ const OpportunitiesPage = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingId(null);
-    setForm({ title: '', value: '', stage: 'new', contact_id: '' });
+    setForm({ title: '', value: '', stage: 'new', contact_id: '', description: '' });
   };
 
   const handleShowModal = () => {
@@ -177,7 +180,7 @@ const OpportunitiesPage = () => {
             variant="primary"
             onClick={() => {
               setEditingId(null);
-              setForm({ title: '', value: '', stage: 'new', contact_id: '' });
+              setForm({ title: '', value: '', stage: 'new', contact_id: '', description: '' });
               handleShowModal();
             }}
           >
@@ -225,6 +228,14 @@ const OpportunitiesPage = () => {
                 onChange={handleChange}
                 placeholder="Enter associated contact ID"
               />
+              <FormInput
+                label="Description"
+                type="text"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Enter opportunity description"
+              />
               <Button type="submit" variant="primary" className="mt-3">
                 {editingId ? 'Update Opportunity' : 'Create Opportunity'}
               </Button>
@@ -261,6 +272,7 @@ const OpportunitiesPage = () => {
                                   <h6>{opp.title}</h6>
                                   <p><strong>Value:</strong> {opp.value}</p>
                                   <p><strong>Contact ID:</strong> {opp.contact_id}</p>
+                                  <p><strong>Description:</strong> {opp.description}</p>
                                   <div className="mt-2">
                                     <button className="btn btn-sm btn-warning mr-2" onClick={() => handleEdit(opp)}>Edit</button>
                                     <button className="btn btn-sm btn-danger" onClick={() => handleDelete(opp.id)}>Delete</button>

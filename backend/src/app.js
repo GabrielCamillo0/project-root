@@ -22,6 +22,8 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 app.use(bodyParser.json());
+app.use(express.json());
+
 
 // Rotas públicas e protegidas 
 app.use('/api/auth', authRoutes);

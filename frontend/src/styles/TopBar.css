@@ -60,13 +60,13 @@
 }
 
 .navbar-toggler:hover {
-  background-color: #f0f0f0;
+  background-color: #e4e3e3;
   transform: scale(1.05);
 }
 
 .navbar-toggler:focus {
   outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+  box-shadow: 0 0 0 0.2rem rgba(#e4e3e3);
 }
 
 /* O ícone padrão do toggle do Bootstrap é definido via background-image */

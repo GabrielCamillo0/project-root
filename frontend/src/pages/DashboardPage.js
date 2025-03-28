@@ -1,4 +1,3 @@
-// frontend/src/pages/DashboardPage.js
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
@@ -20,7 +19,19 @@ import SalesSummaryCards from '../components/SalesSummaryCards';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const DashboardPage = () => {
-  const { user } = useAuth(); // Usuário logado
+  const { auth } = useAuth();
+  const user = auth.user;
+
+  if (!user) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Carregando usuário...</span>
+        </div>
+      </div>
+    );
+  }
+
   const [dashboard, setDashboard] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
@@ -36,13 +47,22 @@ const DashboardPage = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Carrega dados em paralelo
-        const [dashboardRes, contactsRes, opportunitiesRes, tasksRes, communicationsRes] = await Promise.all([
+        // Busca todas as comunicações (sem filtragem por usuário)
+        const communicationsRequest = api.get('/communications');
+
+        // Carrega os dados em paralelo
+        const [
+          dashboardRes,
+          contactsRes,
+          opportunitiesRes,
+          tasksRes,
+          communicationsRes,
+        ] = await Promise.all([
           api.get('/reports/dashboard'),
           api.get('/contacts'),
           api.get('/opportunities'),
           api.get('/tasks'),
-          api.get('/communications')
+          communicationsRequest,
         ]);
         setDashboard(dashboardRes.data);
         setContacts(contactsRes.data);
@@ -61,11 +81,10 @@ const DashboardPage = () => {
     loadData();
   }, [timeframe]);
 
-  // Carrega os usuários (para exibição na seção de usuários)
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const res = await api.get('/auth/users'); // Endpoint que retorna os usuários
+        const res = await api.get('/auth/users');
         setUsers(res.data);
       } catch (err) {
         console.error('Error loading users:', err);
@@ -74,7 +93,6 @@ const DashboardPage = () => {
     loadUsers();
   }, []);
 
-  // Carrega o sales summary para faturamento
   useEffect(() => {
     const loadSalesSummary = async () => {
       try {
@@ -87,11 +105,10 @@ const DashboardPage = () => {
     loadSalesSummary();
   }, []);
 
-  // Formatação
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(value);
   };
 
@@ -100,7 +117,6 @@ const DashboardPage = () => {
     return new Intl.DateTimeFormat('pt-BR').format(date);
   };
 
-  // Dados dos gráficos (mantidos para referência, mas não são renderizados)
   const contactsChartData = {
     labels: ['Total Contacts'],
     datasets: [
@@ -117,7 +133,6 @@ const DashboardPage = () => {
     datasets: [
       {
         label: 'Total Opportunities',
-        // Aqui não usamos os dados do dashboard, pois vamos calcular com base nas oportunidades ativas (não finalizadas)
         data: [opportunities.filter(opp => !opp.finalized).length],
         backgroundColor: 'rgba(153,102,255,0.6)',
       },
@@ -157,26 +172,36 @@ const DashboardPage = () => {
     animation: { duration: 2000, easing: 'easeOutQuart' },
   };
 
-  // Agregação dos dados de sales summary
   const totalRevenue = salesSummary.reduce((acc, row) => acc + parseFloat(row.total_value), 0);
   const totalSales = salesSummary.reduce((acc, row) => acc + parseInt(row.opportunities_count, 10), 0);
-  const projectedRevenue = totalRevenue * 1.1; // Exemplo: 10% de crescimento
+  const projectedRevenue = totalRevenue * 1.1;
 
   const renderTimeframeSelector = () => (
     <div className="btn-group btn-group-sm" role="group" aria-label="Timeframe selector">
-      <button type="button" className={`btn ${timeframe === 'week' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setTimeframe('week')}>
+      <button
+        type="button"
+        className={`btn ${timeframe === 'week' ? 'btn-primary' : 'btn-outline-primary'}`}
+        onClick={() => setTimeframe('week')}
+      >
         Esta Semana
       </button>
-      <button type="button" className={`btn ${timeframe === 'month' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setTimeframe('month')}>
+      <button
+        type="button"
+        className={`btn ${timeframe === 'month' ? 'btn-primary' : 'btn-outline-primary'}`}
+        onClick={() => setTimeframe('month')}
+      >
         Este Mês
       </button>
-      <button type="button" className={`btn ${timeframe === 'quarter' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setTimeframe('quarter')}>
+      <button
+        type="button"
+        className={`btn ${timeframe === 'quarter' ? 'btn-primary' : 'btn-outline-primary'}`}
+        onClick={() => setTimeframe('quarter')}
+      >
         Este Trimestre
       </button>
     </div>
   );
 
-  // Calcula oportunidades ativas (não finalizadas)
   const activeOpportunities = opportunities.filter(opp => !opp.finalized);
   const activeOpportunitiesCount = activeOpportunities.length;
   const activeOpportunitiesTotal = activeOpportunities.reduce((acc, opp) => acc + Number(opp.value), 0);
@@ -185,7 +210,6 @@ const DashboardPage = () => {
     <div>
       <Navbar />
       <div className="container dashboard-container">
-        {/* Cabeçalho com Seletor de Período */}
         <div className="dashboard-header row">
           <div className="col-12 col-md-6">
             <h2>Painel de Controle</h2>
@@ -204,7 +228,6 @@ const DashboardPage = () => {
           </div>
         ) : dashboard ? (
           <>
-            {/* Componente SalesSummaryCards */}
             <SalesSummaryCards
               totalRevenue={totalRevenue}
               totalSales={totalSales}
@@ -212,8 +235,8 @@ const DashboardPage = () => {
               formatCurrency={formatCurrency}
             />
 
-            {/* Cartões de Resumo */}
-            <div className="row mb-4">
+            {/* Adicionado align-items-start para evitar esticamento vertical desnecessário */}
+            <div className="row mb-4 align-items-start">
               <div className="col-12 col-md-3 mb-3 mb-md-0">
                 <div className="card dashboard-card contacts-card">
                   <div className="card-header dashboard-card-header bg-primary text-white">
@@ -280,7 +303,6 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Seção de Usuários */}
             <div className="row">
               <div className="col-12">
                 <div className="card dashboard-card">

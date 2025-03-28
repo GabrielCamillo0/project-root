@@ -1,15 +1,18 @@
+// frontend/src/pages/CommunicationsPage.js
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import FormInput from '../components/Forminput';
 import api from '../services/api';
 import { Modal, Button } from 'react-bootstrap';
 import '../styles/custom.css';
+import useAuth from '../hooks/useAuth';
 
 const CommunicationsPage = () => {
+  const { user } = useAuth();
   const [communications, setCommunications] = useState([]);
   const [error, setError] = useState('');
-  
-  // Estado para o formulário principal de comunicação (criação/edição)
+
+  // Estados dos formulários
   const [form, setForm] = useState({
     type: '',
     content: '',
@@ -17,17 +20,17 @@ const CommunicationsPage = () => {
   });
   const [editingId, setEditingId] = useState(null);
   const [showCommModal, setShowCommModal] = useState(false);
-  
-  // Estado para o formulário de follow-up
   const [followUpForm, setFollowUpForm] = useState({
     contact_id: '',
     content: ''
   });
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
 
+  // Função para buscar todas as comunicações sem filtro
   const fetchCommunications = async () => {
     try {
       const res = await api.get('/communications');
+      console.log("Communications fetched:", res.data); // Debug: veja o que está sendo retornado
       setCommunications(res.data);
     } catch (err) {
       console.error("Error fetching communications:", err);
@@ -36,10 +39,11 @@ const CommunicationsPage = () => {
   };
 
   useEffect(() => {
-    fetchCommunications();
-  }, []);
+    if (user) {
+      fetchCommunications();
+    }
+  }, [user]);
 
-  // Handlers para o formulário principal de comunicação
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -65,11 +69,7 @@ const CommunicationsPage = () => {
 
   const handleEdit = (comm) => {
     setEditingId(comm.id);
-    setForm({
-      type: comm.type,
-      content: comm.content,
-      contact_id: comm.contact_id
-    });
+    setForm({ type: comm.type, content: comm.content, contact_id: comm.contact_id });
     setShowCommModal(true);
   };
 
@@ -95,7 +95,6 @@ const CommunicationsPage = () => {
     setShowCommModal(true);
   };
 
-  // Handlers para o formulário de follow-up
   const handleFollowUpChange = (e) => {
     setFollowUpForm({ ...followUpForm, [e.target.name]: e.target.value });
   };
@@ -131,7 +130,6 @@ const CommunicationsPage = () => {
     <div>
       <Navbar />
       <div className="container page-container my-4">
-        {/* Cabeçalho com dois botões: um para comunicação e outro para follow-up */}
         <div className="d-flex flex-column align-items-end mb-3">
           <h2>Communications</h2>
           <div className="d-flex flex-column align-items-end">
@@ -145,7 +143,6 @@ const CommunicationsPage = () => {
         </div>
         {error && <div className="alert alert-danger">{error}</div>}
 
-        {/* Modal para o formulário principal de comunicação */}
         <Modal show={showCommModal} onHide={handleCloseCommModal}>
           <Modal.Header closeButton>
             <Modal.Title>{editingId ? 'Edit Communication' : 'New Communication'}</Modal.Title>
@@ -183,7 +180,6 @@ const CommunicationsPage = () => {
           </Modal.Body>
         </Modal>
 
-        {/* Modal para o formulário de follow-up */}
         <Modal show={showFollowUpModal} onHide={handleCloseFollowUpModal}>
           <Modal.Header closeButton>
             <Modal.Title>New Follow-up Communication</Modal.Title>
@@ -213,32 +209,35 @@ const CommunicationsPage = () => {
           </Modal.Body>
         </Modal>
 
-        {/* Lista de Communications */}
         <div className="card page-card">
           <div className="card-header page-card-header">
             Communications List
           </div>
           <div className="card-body page-card-body">
-            <ul className="list-group">
-              {communications.map(comm => (
-                <li key={comm.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <h5>{comm.type}</h5>
-                    <p>
-                      {comm.content} | Contact ID: {comm.contact_id} | {comm.created_at ? new Date(comm.created_at).toLocaleString() : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <Button variant="warning" size="sm" onClick={() => handleEdit(comm)} className="mr-2">
-                      Edit
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(comm.id)}>
-                      Delete
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {communications.length === 0 ? (
+              <p className="text-center">Nenhuma comunicação encontrada.</p>
+            ) : (
+              <ul className="list-group">
+                {communications.map(comm => (
+                  <li key={comm.id} className="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <h5>{comm.type}</h5>
+                      <p>
+                        {comm.content} | Contact ID: {comm.contact_id} | {comm.created_at ? new Date(comm.created_at).toLocaleString() : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <Button variant="warning" size="sm" onClick={() => handleEdit(comm)} className="mr-2">
+                        Edit
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(comm.id)}>
+                        Delete
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>

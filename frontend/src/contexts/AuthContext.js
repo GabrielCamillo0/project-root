@@ -1,19 +1,22 @@
 import React, { createContext, useState, useEffect } from 'react';
 
-// Cria o contexto para autenticação
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Estado para armazenar token e informações do usuário
+  // Inicialmente, recupera o token do localStorage; o usuário é nulo.
   const [auth, setAuth] = useState({
     token: localStorage.getItem('token'),
-    user: null
+    user: null,
   });
 
   useEffect(() => {
-    // Se houver token, você pode decodificá-lo ou buscar informações do usuário
-    // Exemplo: setAuth({ token, user: decodedUser });
-  }, []);
+    // Se houver token e o usuário ainda não estiver definido, definimos um usuário dummy.
+    // Em produção, você buscaria os dados reais do usuário.
+    if (auth.token && !auth.user) {
+      const dummyUser = { id: 1, username: 'demoUser', role: 'gestor' };
+      setAuth({ token: auth.token, user: dummyUser });
+    }
+  }, [auth.token, auth.user]);
 
   const login = (token, user) => {
     localStorage.setItem('token', token);

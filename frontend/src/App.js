@@ -4,13 +4,13 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ContactsPage from './pages/ContactsPage';
 import OpportunitiesPage from './pages/OpportunitiesPage';
-import AccountsPage from './pages/AccountsPage';
 import TasksPage from './pages/TasksPage';
 import CommunicationsPage from './pages/CommunicationsPage';
 import PrivateRoute from './components/PrivateRoute';
 import TopBar from './components/TopBar';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './contexts/AuthContext';
+
 
 // Importação dos CSS
 import './styles/custom.css';
@@ -31,8 +31,7 @@ const App = () => (
               <Route path="/" element={<DashboardPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/contacts" element={<ContactsPage />} />
-              <Route path="/opportunities" element={<OpportunitiesPage />} />
-              
+              <Route path="/opportunities" element={<OpportunitiesPage />} />              
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/communications" element={<CommunicationsPage />} />
             </Route>
